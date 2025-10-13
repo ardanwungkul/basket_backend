@@ -9,16 +9,23 @@ use Illuminate\Validation\Rules;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::all();
+        $query = User::query();
+
+        if ($request->with) {
+            $withRelations = $request->query('with', '');
+            $relations = $withRelations ? explode(',', $withRelations) : [];
+            $query->with($relations);
+        }
+        $data = $query->get();
         return response()->json([
             'success' => true,
-            'data' => $users
+            'data' => $data
         ]);
     }
 
-     public function store(Request $request)
+    public function store(Request $request)
     {
         try {
             $request->validate([
@@ -38,11 +45,9 @@ class UserController extends Controller
             ]);
 
             return response()->json([
-                'success' => true,
-                'message' => 'User berhasil dibuat',
+                'message' => 'Berhasil Menambahkan User',
                 'data' => $user
             ], 201);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -58,10 +63,9 @@ class UserController extends Controller
         }
     }
 
-    public function show($id)
+    public function show(User $user)
     {
-        $user = User::find($id);
-        
+
         if (!$user) {
             return response()->json([
                 'success' => false,
@@ -75,10 +79,9 @@ class UserController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, User $user)
     {
-        $user = User::find($id);
-        
+
         if (!$user) {
             return response()->json([
                 'success' => false,
@@ -88,19 +91,16 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users,username,' . $id,
-            'email' => 'required|string|email|max:255|unique:users,email,' . $id,
-            'role' => 'required|in:admin,member,parent,coach',
+            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
         ]);
 
         $user->update([
             'name' => $request->name,
             'username' => $request->username,
             'email' => $request->email,
-            'role' => $request->role,
         ]);
 
-        // Update password jika diisi
         if ($request->filled('password')) {
             $request->validate([
                 'password' => ['required', 'confirmed', Rules\Password::defaults()],
@@ -111,36 +111,29 @@ class UserController extends Controller
         }
 
         return response()->json([
-            'success' => true,
-            'message' => 'User berhasil diupdate',
+            'message' => 'Berhasil Mengubah Data User',
             'data' => $user
         ]);
     }
 
-    public function destroy($id)
+    public function destroy(User $user)
     {
-        $user = User::find($id);
-        
         if (!$user) {
             return response()->json([
-                'success' => false,
                 'message' => 'User tidak ditemukan'
             ], 404);
         }
 
-        // Cek jika user sedang digunakan
-        if ($user->guardian()->exists()) {
+        if ($user->parent()->exists()) {
             return response()->json([
-                'success' => false,
-                'message' => 'Tidak dapat menghapus user karena masih terkait dengan data guardian'
+                'message' => 'Tidak dapat menghapus user karena masih terkait dengan data guardian/parent'
             ], 422);
         }
 
         $user->delete();
 
         return response()->json([
-            'success' => true,
-            'message' => 'User berhasil dihapus'
+            'message' => 'Berhasil Menghapus Data User'
         ]);
     }
 }

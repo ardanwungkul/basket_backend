@@ -30,18 +30,11 @@ Route::post('login', [AuthController::class, 'login']);
 Route::middleware(['jwt.auth'])->group(function () {
     Route::resource('parent', GuardianController::class);
     Route::resource('member', MemberController::class);
-     Route::resource('users', UserController::class);
+    Route::resource('users', UserController::class);
 
     Route::post('member-verification', [MemberFileController::class, 'store']);
     Route::get('me', [AuthController::class, 'getAuthenticatedUser']);
 
     Route::get('getByAuth/member', [MemberController::class, 'getByAuth']);
     Route::get('getByAuth/parent', [GuardianController::class, 'getByAuth']);
-
-    // User Routes
-    Route::get('users', [UserController::class, 'index']);
-    Route::post('users', [UserController::class, 'store']);
-    Route::get('users/{id}', [UserController::class, 'show']);
-    Route::put('users/{id}', [UserController::class, 'update']);
-    Route::delete('users/{id}', [UserController::class, 'destroy']);
 });

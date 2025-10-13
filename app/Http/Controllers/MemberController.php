@@ -39,9 +39,19 @@ class MemberController extends Controller
 
         return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
     }
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $query = Member::query();
+
+        if ($request->with) {
+            $withRelations = $request->query('with', '');
+            $relations = $withRelations ? explode(',', $withRelations) : [];
+            $query->with($relations);
+        }
+
+        $data = $query->get();
+
+        return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
     }
 
     /**

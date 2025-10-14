@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Guardian;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -43,6 +44,14 @@ class UserController extends Controller
                 'password' => Hash::make($request->password),
                 'role' => $request->role,
             ]);
+
+            if ($request->role === 'parent') {
+                $guardian = new Guardian();
+                $guardian->name = $request->name;
+                $guardian->email = $request->email;
+                $guardian->user_id = $user->id;
+                $guardian->save();
+            }
 
             return response()->json([
                 'message' => 'Berhasil Menambahkan User',
@@ -110,6 +119,23 @@ class UserController extends Controller
             ]);
         }
 
+        if ($user->role === 'parent') {
+            $guardian = Guardian::where('user_id', $user->id)->first();
+            if ($guardian) {
+                $guardian->update([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                ]);
+            } else {
+
+                $guardian = new Guardian();
+                $guardian->name = $request->name;
+                $guardian->email = $request->email;
+                $guardian->user_id = $user->id;
+                $guardian->save();
+            }
+        }
+
         return response()->json([
             'message' => 'Berhasil Mengubah Data User',
             'data' => $user
@@ -118,22 +144,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        if (!$user) {
-            return response()->json([
-                'message' => 'User tidak ditemukan'
-            ], 404);
-        }
-
-        if ($user->parent()->exists()) {
-            return response()->json([
-                'message' => 'Tidak dapat menghapus user karena masih terkait dengan data guardian/parent'
-            ], 422);
-        }
-
         $user->delete();
-
-        return response()->json([
-            'message' => 'Berhasil Menghapus Data User'
-        ]);
+        return response()->json(['data' => $user, 'message' => 'Berhasil Menghapus Data']);
     }
 }

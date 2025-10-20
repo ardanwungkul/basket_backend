@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Guardian extends Model
+class Payment extends Model
 {
     use HasFactory;
     public $incrementing = false;
@@ -20,9 +20,5 @@ class Guardian extends Model
                 $model->{$model->getKeyName()} = (string) Str::uuid();
             }
         });
-    }
-    public function member()
-    {
-        return $this->hasMany(Member::class, 'parent_id');
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GuardianController;
+use App\Http\Controllers\MemberBillController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MemberFileController;
@@ -37,4 +38,5 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     Route::get('getByAuth/member', [MemberController::class, 'getByAuth']);
     Route::get('getByAuth/parent', [GuardianController::class, 'getByAuth']);
+    Route::get('getByAuth/bill', [MemberBillController::class, 'getByAuth']);
 });

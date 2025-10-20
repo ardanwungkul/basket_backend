@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('guardians', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
+            $table->uuid('id')->primary();
+            $table->string('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
             $table->string('name');
             $table->longText('address')->nullable();

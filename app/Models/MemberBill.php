@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Guardian extends Model
+class MemberBill extends Model
 {
     use HasFactory;
     public $incrementing = false;
@@ -23,6 +23,6 @@ class Guardian extends Model
     }
     public function member()
     {
-        return $this->hasMany(Member::class, 'parent_id');
+        return $this->belongsTo(Member::class, 'member_id');
     }
 }

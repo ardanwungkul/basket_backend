@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('members', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->enum('gender', ['Laki Laki', 'Perempuan']);
             $table->string('place_of_birth');
@@ -29,8 +29,14 @@ return new class extends Migration
             $table->string('parent_email');
             $table->longText('parent_address');
 
-            $table->unsignedBigInteger('parent_id');
+            $table->string('parent_id');
             $table->foreign('parent_id')->references('id')->on('guardians')->onUpdate('cascade')->onDelete('cascade');
+
+            $table->decimal('registration_fee', 12, 2)->default(400000);
+            $table->decimal('monthly_fee', 12, 2)->default(350000);
+
+            $table->enum('status', ['active', 'inactive'])->default('inactive');
+            $table->date('join_date')->nullable();
 
             $table->timestamps();
         });

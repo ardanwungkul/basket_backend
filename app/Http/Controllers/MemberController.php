@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Member;
+use App\Models\MemberBill;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class MemberController extends Controller
 {
@@ -22,7 +25,7 @@ class MemberController extends Controller
             $query->with($relations);
         }
 
-        $data = $query->get();
+        $data = $query->orderBy('created_at', 'asc')->get();
 
         return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
     }
@@ -83,6 +86,7 @@ class MemberController extends Controller
         $auth = Auth::user();
         $parent = $auth->parent;
 
+
         $member = new Member();
         $member->name = $request->name;
         $member->gender = $request->gender;
@@ -98,8 +102,25 @@ class MemberController extends Controller
         $member->parent_phone_number = $request->parent_phone_number;
         $member->parent_email = $request->parent_email;
         $member->parent_address = $request->parent_address;
-        $member->parent_id = $parent->id;
+        $member->parent_id = $parent ? $parent->id : $request->parent_id;
+
+        if ($parent && $parent->member->count() > 0) {
+            if ($parent->member->count() == 1) {
+                $member->monthly_fee = 250000;
+            } else if ($parent->member->count() >= 2) {
+                $member->monthly_fee = 200000;
+            }
+        }
         $member->save();
+
+        $member_bill = new MemberBill();
+        $member_bill->bill_type = 'registration';
+        $member_bill->member_id = $member->id;
+        $member_bill->amount = 400000;
+        $member_bill->due_date = Carbon::now()->addMonth();
+        $member_bill->status = 'UNPAID';
+        $member_bill->save();
+
 
         return response()->json(['data' => $member, 'message' => 'Berhasil Menambahkan Member']);
     }

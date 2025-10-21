@@ -17,8 +17,11 @@ class MemberController extends Controller
     public function getByAuth(Request $request)
     {
         $auth = Auth::user();
+         if ($auth->parent) {
         $query = $auth->parent->member();
-
+    } else {
+        $query = Member::query();
+    }
         if ($request->with) {
             $withRelations = $request->query('with', '');
             $relations = $withRelations ? explode(',', $withRelations) : [];

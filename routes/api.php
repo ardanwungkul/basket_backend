@@ -7,6 +7,8 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MemberFileController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\TrainingScheduleController;
+use App\Http\Controllers\AttendanceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -42,4 +44,18 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('getByAuth/member', [MemberController::class, 'getByAuth']);
     Route::get('getByAuth/parent', [GuardianController::class, 'getByAuth']);
     Route::get('getByAuth/bill', [MemberBillController::class, 'getByAuth']);
+
+    Route::prefix('training')->group(function () {
+        Route::get('schedule', [TrainingScheduleController::class, 'index']);
+        Route::post('schedule', [TrainingScheduleController::class, 'store']);
+        Route::delete('schedule/{id}', [TrainingScheduleController::class, 'destroy']);
+    });
+
+    Route::prefix('attendance')->group(function () {
+        Route::get('/', [AttendanceController::class, 'index']);
+        Route::post('/', [AttendanceController::class, 'store']);
+        Route::post('/scan', [AttendanceController::class, 'scan']);
+        Route::put('/{id}', [AttendanceController::class, 'update']);
+        Route::delete('/{id}', [AttendanceController::class, 'destroy']);
+    });
 });

@@ -6,6 +6,7 @@ use App\Http\Controllers\MemberBillController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MemberFileController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,9 +30,11 @@ Route::post('login', [AuthController::class, 'login']);
 
 
 Route::middleware(['jwt.auth'])->group(function () {
+    Route::resource('bill', MemberBillController::class);
     Route::resource('parent', GuardianController::class);
     Route::resource('member', MemberController::class);
     Route::resource('users', UserController::class);
+    Route::resource('payment', PaymentController::class);
 
     Route::post('member-verification', [MemberFileController::class, 'store']);
     Route::get('me', [AuthController::class, 'getAuthenticatedUser']);

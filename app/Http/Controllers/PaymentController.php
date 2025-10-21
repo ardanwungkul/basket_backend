@@ -36,7 +36,8 @@ class PaymentController extends Controller
      */
     public function show(Payment $payment)
     {
-        //
+        $data = $payment->load(['details', 'details.bill', 'details.bill.member']);
+        return response(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
     }
 
     /**

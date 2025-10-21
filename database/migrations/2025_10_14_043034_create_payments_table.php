@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('parent_id');
             $table->foreign('parent_id')->references('id')->on('guardians')->onUpdate('cascade')->onDelete('cascade');
-            $table->date('payment_date');
+            $table->date('payment_date')->nullable();
             $table->decimal('total_amount', 12, 2);
             $table->enum('payment_method', ['transfer', 'qris']);
             $table->string('reference_code');

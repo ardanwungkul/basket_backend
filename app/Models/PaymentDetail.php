@@ -21,4 +21,8 @@ class PaymentDetail extends Model
             }
         });
     }
+    public function bill()
+    {
+        return $this->belongsTo(MemberBill::class, 'bill_id');
+    }
 }

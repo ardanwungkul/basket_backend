@@ -21,4 +21,8 @@ class Payment extends Model
             }
         });
     }
+    public function details()
+    {
+        return $this->hasMany(PaymentDetail::class, 'payment_id');
+    }
 }

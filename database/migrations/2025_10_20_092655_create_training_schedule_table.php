@@ -10,8 +10,9 @@ return new class extends Migration
     {
         Schema::create('training_schedule', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->text('title');
             $table->date('date');
-            $table->timestamps(); 
+            $table->timestamps();
         });
     }
 

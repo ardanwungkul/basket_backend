@@ -3,16 +3,38 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function getByAuth(Request $request)
     {
-        //
+        $auth = Auth::user();
+        $query = Payment::where('parent_id', $auth->parent->id);
+        if ($request->with) {
+            $withRelations = $request->query('with', '');
+            $relations = $withRelations ? explode(',', $withRelations) : [];
+            $query->with($relations);
+        }
+
+        $data = $query->orderBy('created_at', 'asc')->get();
+
+        return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
+    }
+    public function index(Request $request)
+    {
+        $query = Payment::query();
+        if ($request->with) {
+            $withRelations = $request->query('with', '');
+            $relations = $withRelations ? explode(',', $withRelations) : [];
+            $query->with($relations);
+        }
+
+        $data = $query->orderBy('created_at', 'asc')->get();
+
+        return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
     }
 
     /**
@@ -23,12 +45,46 @@ class PaymentController extends Controller
         //
     }
 
+
+    public function confirmPayment(Request $request)
+    {
+        $payment = Payment::find($request->id);
+        $payment->payment_date = Carbon::now();
+        $payment->status = 'SUCCESS';
+        $payment->save();
+
+        foreach ($payment->details as $detail) {
+            $bill = $detail->bill;
+            $bill->status = 'PAID';
+            $bill->save();
+
+            $hasUnpaidBills = $bill->member->bill()->where('status', 'UNPAID')->exists();
+            if (!$hasUnpaidBills) {
+                $member = $bill->member;
+                $member->status = 'active';
+                $member->save();
+            }
+        }
+
+        return response()->json(['data' => $payment, 'message' => 'Berhasil Mengkonfirmasi Pembayaran']);
+    }
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        //
+        $payment = Payment::find($request->id);
+        $payment->payment_method = $request->payment_method;
+        $file_path = public_path('storage/files/payment/' . $payment->parent_id . '/');
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $file_name = time() . '-file-' . $request->id . '.' . $file->getClientOriginalExtension();
+            $file->move($file_path, $file_name);
+            $payment->file = $file_name;
+        }
+        $payment->status = 'PENDING';
+        $payment->save();
+        return response()->json(['data' => $payment, 'message' => 'Berhasil Melakukan Pembayaran']);
     }
 
     /**

@@ -48,7 +48,18 @@ class MemberBillController extends Controller
 
         $bills = [];
         foreach ($request->checkbox as $id) {
-            $bills[] = MemberBill::find($id['id']);
+            $member_bill = MemberBill::find($id['id']);
+            $exist_bill = PaymentDetail::where('bill_id', $id['id'])->first();
+            if ($exist_bill) {
+                return response()->json(
+                    [
+                        'status' => 422,
+                        'errors' => [['Selesaikan Pembayaran pada Tagihan Sebelumnya']]
+                    ],
+                    422
+                );
+            }
+            $bills[] = $member_bill;
         }
         $payment = new Payment();
         $payment->parent_id = $parent->id;
@@ -57,9 +68,8 @@ class MemberBillController extends Controller
             $total += $bill->amount;
         }
         $payment->total_amount = $total;
-        $payment->payment_method = $request->payment_method;
         $payment->reference_code = Str::uuid();
-        $payment->status = 'PENDING';
+        $payment->status = 'UNPAID';
         $payment->save();
 
         foreach ($bills as $bill) {
@@ -69,7 +79,7 @@ class MemberBillController extends Controller
             $payment_detail->amount = $bill->amount;
             $payment_detail->save();
         }
-        return response()->json(['data' => $payment, 'Message' => 'Berhasil Membuat Pembayaran']);
+        return response()->json(['data' => $payment, 'message' => 'Berhasil Membuat Pembayaran']);
     }
 
     /**

@@ -17,9 +17,10 @@ return new class extends Migration
             $table->foreign('parent_id')->references('id')->on('guardians')->onUpdate('cascade')->onDelete('cascade');
             $table->date('payment_date')->nullable();
             $table->decimal('total_amount', 12, 2);
-            $table->enum('payment_method', ['transfer', 'qris']);
+            $table->enum('payment_method', ['transfer', 'qris'])->nullable();
             $table->string('reference_code');
-            $table->enum('status', ['PENDING', 'SUCCESS', 'FAILED']);
+            $table->enum('status', ['UNPAID', 'PENDING', 'SUCCESS', 'FAILED']);
+            $table->string('file')->nullable();
             $table->timestamps();
         });
     }

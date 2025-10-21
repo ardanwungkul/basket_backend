@@ -39,11 +39,14 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::resource('payment', PaymentController::class);
 
     Route::post('member-verification', [MemberFileController::class, 'store']);
+    Route::post('confirm-payment', [PaymentController::class, 'confirmPayment']);
     Route::get('me', [AuthController::class, 'getAuthenticatedUser']);
 
     Route::get('getByAuth/member', [MemberController::class, 'getByAuth']);
     Route::get('getByAuth/parent', [GuardianController::class, 'getByAuth']);
     Route::get('getByAuth/bill', [MemberBillController::class, 'getByAuth']);
+    Route::get('getByAuth/payment', [PaymentController::class, 'getByAuth']);
+
 
     Route::prefix('training')->group(function () {
         Route::get('schedule', [TrainingScheduleController::class, 'index']);

@@ -1,14 +1,14 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\MemberBillController;
 use App\Http\Controllers\MemberController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\MemberFileController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\TrainingScheduleController;
-use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,7 +29,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
-
 
 Route::middleware(['jwt.auth'])->group(function () {
     Route::resource('bill', MemberBillController::class);
@@ -57,8 +56,9 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::prefix('attendance')->group(function () {
         Route::get('/', [AttendanceController::class, 'index']);
         Route::post('/', [AttendanceController::class, 'store']);
-        Route::post('/scan', [AttendanceController::class, 'scan']);
+        Route::post('/scan-qr', [AttendanceController::class, 'scanQR']);
         Route::put('/{id}', [AttendanceController::class, 'update']);
         Route::delete('/{id}', [AttendanceController::class, 'destroy']);
     });
+
 });

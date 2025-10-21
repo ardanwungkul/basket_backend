@@ -11,7 +11,7 @@ class TrainingSchedule extends Model
     use HasFactory, HasUuids;
 
     protected $table = 'training_schedule';
-    protected $fillable = ['date'];
+    protected $fillable = ['title','date'];
 
     public function attendances()
     {

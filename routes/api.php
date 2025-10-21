@@ -6,6 +6,7 @@ use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\MemberBillController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MemberFileController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\TrainingScheduleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -30,16 +31,21 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware(['jwt.auth'])->group(function () {
+    Route::resource('bill', MemberBillController::class);
     Route::resource('parent', GuardianController::class);
     Route::resource('member', MemberController::class);
     Route::resource('users', UserController::class);
+    Route::resource('payment', PaymentController::class);
 
     Route::post('member-verification', [MemberFileController::class, 'store']);
+    Route::post('confirm-payment', [PaymentController::class, 'confirmPayment']);
     Route::get('me', [AuthController::class, 'getAuthenticatedUser']);
 
     Route::get('getByAuth/member', [MemberController::class, 'getByAuth']);
     Route::get('getByAuth/parent', [GuardianController::class, 'getByAuth']);
     Route::get('getByAuth/bill', [MemberBillController::class, 'getByAuth']);
+    Route::get('getByAuth/payment', [PaymentController::class, 'getByAuth']);
+
 
     Route::prefix('training')->group(function () {
         Route::get('schedule', [TrainingScheduleController::class, 'index']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TrainingSchedule;
+use App\Models\Pivot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
@@ -11,7 +12,10 @@ class TrainingScheduleController extends Controller
 {
     public function index()
     {
-        $data = TrainingSchedule::orderBy('date', 'desc')->get();
+        $data = TrainingSchedule::with('pivots.member')
+            ->orderBy('date', 'desc')
+            ->get();
+
         return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
     }
 
@@ -20,6 +24,7 @@ class TrainingScheduleController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'date' => 'required|date',
+            'member_ids' => 'array',
         ]);
 
         if ($validator->fails()) {
@@ -35,9 +40,19 @@ class TrainingScheduleController extends Controller
             'date' => $request->date,
         ]);
 
+        if ($request->has('member_ids') && is_array($request->member_ids)) {
+            foreach ($request->member_ids as $memberId) {
+                Pivot::create([
+                    'id' => Str::uuid(),
+                    'member_id' => $memberId,
+                    'training_schedule_id' => $schedule->id,
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Jadwal latihan berhasil ditambahkan',
-            'data' => $schedule
+            'data' => $schedule->load('pivots.member')
         ], 201);
     }
 
@@ -46,6 +61,7 @@ class TrainingScheduleController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'date' => 'required|date',
+            'member_ids' => 'array',
         ]);
 
         if ($validator->fails()) {
@@ -61,15 +77,27 @@ class TrainingScheduleController extends Controller
             'date' => $request->date,
         ]);
 
+        if ($request->has('member_ids')) {
+            $schedule->pivots()->delete();
+            foreach ($request->member_ids as $memberId) {
+                Pivot::create([
+                    'id' => Str::uuid(),
+                    'member_id' => $memberId,
+                    'training_schedule_id' => $schedule->id,
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Jadwal latihan berhasil diupdate',
-            'data' => $schedule
+            'data' => $schedule->load('pivots.member')
         ]);
     }
 
     public function destroy($id)
     {
         $schedule = TrainingSchedule::findOrFail($id);
+        $schedule->pivots()->delete();
         $schedule->delete();
 
         return response()->json([

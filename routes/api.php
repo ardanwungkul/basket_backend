@@ -50,6 +50,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::prefix('training')->group(function () {
         Route::get('schedule', [TrainingScheduleController::class, 'index']);
         Route::post('schedule', [TrainingScheduleController::class, 'store']);
+        Route::put('schedule/{id}', [TrainingScheduleController::class, 'update']);
         Route::delete('schedule/{id}', [TrainingScheduleController::class, 'destroy']);
     });
 
@@ -60,5 +61,4 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::put('/{id}', [AttendanceController::class, 'update']);
         Route::delete('/{id}', [AttendanceController::class, 'destroy']);
     });
-
 });

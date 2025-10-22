@@ -12,13 +12,19 @@ use Illuminate\Support\Str;
 
 class AttendanceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $attendances = Attendance::with(['member', 'coach', 'trainingSchedule'])
-            ->orderBy('date', 'desc')
-            ->get();
+        $query = Attendance::query();
 
-        return response()->json($attendances);
+        if ($request->with) {
+            $withRelations = $request->query('with', '');
+            $relations = $withRelations ? explode(',', $withRelations) : [];
+            $query->with($relations);
+        }
+
+        $data = $query->get();
+
+        return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
     }
 
     // Tambah absensi (manual input)
@@ -124,7 +130,6 @@ class AttendanceController extends Controller
                 'message' => 'Absensi berhasil disimpan via QR Scan',
                 'data' => $attendance->load('member'),
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Terjadi kesalahan saat memproses QR Code',

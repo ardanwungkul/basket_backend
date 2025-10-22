@@ -11,8 +11,8 @@ class TrainingScheduleController extends Controller
 {
     public function index()
     {
-        $schedules = TrainingSchedule::orderBy('date', 'desc')->get();
-        return response()->json($schedules);
+        $data = TrainingSchedule::orderBy('date', 'desc')->get();
+        return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
     }
 
     public function store(Request $request)
@@ -73,7 +73,8 @@ class TrainingScheduleController extends Controller
         $schedule->delete();
 
         return response()->json([
-            'message' => 'Jadwal latihan berhasil dihapus'
+            'data' => $schedule,
+            'message' => 'Berhasil Menghapus Data'
         ]);
     }
 }

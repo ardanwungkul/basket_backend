@@ -18,8 +18,8 @@ class TrainingSchedule extends Model
         return $this->hasMany(Attendance::class, 'training_schedule_id');
     }
 
-    public function pivots()
+    public function member()
     {
-        return $this->hasMany(Pivot::class, 'training_schedule_id');
+        return $this->belongsToMany(Member::class, 'pivot_member_training_schedule', 'member_id', 'training_schedule_id');
     }
 }

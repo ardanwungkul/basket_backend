@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pivot', function (Blueprint $table) {
-            $table->char('id', 36)->primary();
-            $table->char('member_id', 36);
-            $table->char('training_schedule_id', 36);
+        Schema::create('pivot_member_training_schedule', function (Blueprint $table) {
+            $table->id();
+            $table->string('member_id', 36);
+            $table->string('training_schedule_id', 36);
             $table->timestamps();
 
             $table->foreign('member_id')->references('id')->on('members')->onDelete('cascade');
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pivot');
+        Schema::dropIfExists('pivot_member_training_schedule');
     }
 };

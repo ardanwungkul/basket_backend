@@ -34,4 +34,8 @@ class Member extends Model
     {
         return $this->hasMany(MemberBill::class, 'member_id');
     }
+    public function training_schedule()
+    {
+        return $this->belongsToMany(TrainingSchedule::class, 'pivot_member_training_schedule', 'training_schedule_id', 'member_id');
+    }
 }

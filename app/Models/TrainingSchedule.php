@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class TrainingSchedule extends Model
 {
     use HasFactory, HasUuids;
 
     protected $table = 'training_schedule';
+
     protected $fillable = ['title', 'date'];
 
     public function attendances()
@@ -18,8 +19,8 @@ class TrainingSchedule extends Model
         return $this->hasMany(Attendance::class, 'training_schedule_id');
     }
 
-    public function member()
+    public function members()
     {
-        return $this->belongsToMany(Member::class, 'pivot_member_training_schedule', 'member_id', 'training_schedule_id');
+        return $this->belongsToMany(Member::class, 'pivot_member_training_schedule', 'training_schedule_id', 'member_id');
     }
 }

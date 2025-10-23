@@ -11,10 +11,15 @@ class TrainingSchedule extends Model
     use HasFactory, HasUuids;
 
     protected $table = 'training_schedule';
-    protected $fillable = ['title','date'];
+    protected $fillable = ['title', 'date'];
 
     public function attendances()
     {
         return $this->hasMany(Attendance::class, 'training_schedule_id');
+    }
+
+    public function pivots()
+    {
+        return $this->hasMany(Pivot::class, 'training_schedule_id');
     }
 }

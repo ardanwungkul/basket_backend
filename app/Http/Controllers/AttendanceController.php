@@ -27,26 +27,26 @@ class AttendanceController extends Controller
         return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
     }
 
-    // Helper function untuk menghitung KU
+    // helper untuk menghitung KU berdasarkan tahun lahir 
     private function calculateAgeGroup($dateOfBirth)
     {
         if (!$dateOfBirth) return null;
-        
+
         $birthYear = Carbon::parse($dateOfBirth)->year;
         $currentYear = Carbon::now()->year;
         return $currentYear - $birthYear;
     }
 
-    // Helper function untuk mendapatkan KUs dari jadwal
+    // ambil daftar KU dari semua member yang tergabung di jadwal 
     private function getScheduleKUs($trainingScheduleId)
     {
-        $schedule = TrainingSchedule::with('pivots')->find($trainingScheduleId);
-        if (!$schedule || !$schedule->pivots) return [];
+        $schedule = TrainingSchedule::with('members')->find($trainingScheduleId);
+        if (!$schedule || !$schedule->members) return [];
 
         $kuSet = [];
-        foreach ($schedule->pivots as $pivot) {
-            if ($pivot->member && $pivot->member->date_of_birth) {
-                $ku = $this->calculateAgeGroup($pivot->member->date_of_birth);
+        foreach ($schedule->members as $member) {
+            if ($member->date_of_birth) {
+                $ku = $this->calculateAgeGroup($member->date_of_birth);
                 if ($ku) $kuSet[] = $ku;
             }
         }
@@ -54,7 +54,7 @@ class AttendanceController extends Controller
         return array_unique($kuSet);
     }
 
-    // Validasi KU member dengan jadwal
+    // validasi member cocok tidak dengan KU
     private function validateMemberKU($memberId, $trainingScheduleId)
     {
         $member = Member::find($memberId);
@@ -68,7 +68,7 @@ class AttendanceController extends Controller
         return in_array($memberKU, $scheduleKUs);
     }
 
-    // Tambah absensi (manual input)
+    // absen manual
     public function store(Request $request)
     {
         $request->validate([
@@ -78,7 +78,6 @@ class AttendanceController extends Controller
             'reason' => 'nullable|string',
         ]);
 
-        // Cek status member
         $member = Member::find($request->member_id);
         if (!$member) {
             return response()->json(['message' => 'Member tidak ditemukan'], 404);
@@ -88,18 +87,18 @@ class AttendanceController extends Controller
             return response()->json(['message' => 'Member tidak aktif. Tidak dapat melakukan absensi.'], 403);
         }
 
-        // Validasi KU member dengan jadwal
         if (!$this->validateMemberKU($request->member_id, $request->training_schedule_id)) {
             $memberKU = $this->calculateAgeGroup($member->date_of_birth);
             $scheduleKUs = $this->getScheduleKUs($request->training_schedule_id);
             $scheduleKUsString = implode(', ', $scheduleKUs);
-            
+
             return response()->json([
                 'message' => "Member tidak sesuai dengan jadwal! KU {$memberKU} tidak termasuk dalam KU jadwal ini ({$scheduleKUsString})"
             ], 422);
         }
 
         $coach_id = Auth::id() ?? Str::uuid();
+
         $attendance = Attendance::create([
             'id' => Str::uuid(),
             'member_id' => $request->member_id,
@@ -118,6 +117,7 @@ class AttendanceController extends Controller
         ]);
     }
 
+    // absen via qr
     public function scanQR(Request $request)
     {
         $request->validate([
@@ -126,16 +126,14 @@ class AttendanceController extends Controller
         ]);
 
         try {
-            // Decode base64
             $decoded = base64_decode($request->encrypted_member_id);
             if (!$decoded) {
                 return response()->json(['message' => 'QR Code tidak valid'], 400);
             }
 
             $member_id = $decoded;
-
-            // Validasi member
             $member = Member::find($member_id);
+
             if (!$member) {
                 return response()->json(['message' => 'Member tidak ditemukan'], 404);
             }
@@ -144,24 +142,21 @@ class AttendanceController extends Controller
                 return response()->json(['message' => 'Member tidak aktif. Tidak dapat melakukan absensi.'], 403);
             }
 
-            // Validasi jadwal latihan
             $trainingSchedule = TrainingSchedule::find($request->training_schedule_id);
             if (!$trainingSchedule) {
                 return response()->json(['message' => 'Jadwal latihan tidak ditemukan'], 404);
             }
 
-            // Validasi KU member dengan jadwal
             if (!$this->validateMemberKU($member_id, $request->training_schedule_id)) {
                 $memberKU = $this->calculateAgeGroup($member->date_of_birth);
                 $scheduleKUs = $this->getScheduleKUs($request->training_schedule_id);
                 $scheduleKUsString = implode(', ', $scheduleKUs);
-                
+
                 return response()->json([
                     'message' => "Member tidak sesuai dengan jadwal! KU {$memberKU} tidak termasuk dalam KU jadwal ini ({$scheduleKUsString})"
                 ], 422);
             }
 
-            // Cek apakah sudah absen hari ini untuk jadwal ini
             $existingAttendance = Attendance::where('member_id', $member_id)
                 ->where('training_schedule_id', $request->training_schedule_id)
                 ->where('date', Carbon::today()->toDateString())
@@ -176,7 +171,6 @@ class AttendanceController extends Controller
 
             $coach_id = Auth::id() ?? Str::uuid();
 
-            // Buat absensi
             $attendance = Attendance::create([
                 'id' => Str::uuid(),
                 'member_id' => $member_id,
@@ -201,24 +195,22 @@ class AttendanceController extends Controller
         }
     }
 
-    // Update absensi (ubah status atau alasan)
+    // update absensi
     public function update(Request $request, $id)
     {
         $attendance = Attendance::findOrFail($id);
-
-        // Cek status member saat update
         $member = Member::find($attendance->member_id);
+
         if ($member && $member->status !== 'active') {
             return response()->json(['message' => 'Member tidak aktif. Tidak dapat mengubah absensi.'], 403);
         }
 
-        // Jika training_schedule_id diubah, validasi KU
         if ($request->has('training_schedule_id') && $request->training_schedule_id !== $attendance->training_schedule_id) {
             if (!$this->validateMemberKU($attendance->member_id, $request->training_schedule_id)) {
                 $memberKU = $this->calculateAgeGroup($member->date_of_birth);
                 $scheduleKUs = $this->getScheduleKUs($request->training_schedule_id);
                 $scheduleKUsString = implode(', ', $scheduleKUs);
-                
+
                 return response()->json([
                     'message' => "Member tidak sesuai dengan jadwal! KU {$memberKU} tidak termasuk dalam KU jadwal ini ({$scheduleKUsString})"
                 ], 422);
@@ -233,6 +225,7 @@ class AttendanceController extends Controller
         ]);
     }
 
+    // Hapus absensi
     public function destroy($id)
     {
         $attendance = Attendance::findOrFail($id);

@@ -86,7 +86,6 @@ class TrainingScheduleController extends Controller
     public function destroy($id)
     {
         $schedule = TrainingSchedule::findOrFail($id);
-        $schedule->members()->detach();
         $schedule->delete();
 
         return response()->json([

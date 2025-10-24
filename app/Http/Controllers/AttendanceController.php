@@ -27,7 +27,6 @@ class AttendanceController extends Controller
         return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
     }
 
-    // helper untuk menghitung KU berdasarkan tahun lahir 
     private function calculateAgeGroup($dateOfBirth)
     {
         if (!$dateOfBirth) return null;
@@ -37,7 +36,6 @@ class AttendanceController extends Controller
         return $currentYear - $birthYear;
     }
 
-    // ambil daftar KU dari semua member yang tergabung di jadwal 
     private function getScheduleKUs($trainingScheduleId)
     {
         $schedule = TrainingSchedule::with('members')->find($trainingScheduleId);
@@ -97,12 +95,11 @@ class AttendanceController extends Controller
             ], 422);
         }
 
-        $coach_id = Auth::id() ?? Str::uuid();
 
         $attendance = Attendance::create([
             'id' => Str::uuid(),
             'member_id' => $request->member_id,
-            'coach_id' => $coach_id,
+            'coach_id' => Auth::id() ?? Str::uuid(),
             'training_schedule_id' => $request->training_schedule_id,
             'date' => Carbon::today()->toDateString(),
             'time' => Carbon::now()->format('H:i:s'),
@@ -169,12 +166,11 @@ class AttendanceController extends Controller
                 ], 409);
             }
 
-            $coach_id = Auth::id() ?? Str::uuid();
 
             $attendance = Attendance::create([
                 'id' => Str::uuid(),
                 'member_id' => $member_id,
-                'coach_id' => $coach_id,
+                'coach_id' => Auth::id() ?? Str::uuid(),
                 'training_schedule_id' => $request->training_schedule_id,
                 'date' => Carbon::today()->toDateString(),
                 'time' => Carbon::now()->format('H:i:s'),

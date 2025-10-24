@@ -116,15 +116,6 @@ class MemberController extends Controller
         }
         $member->save();
 
-        $member_bill = new MemberBill();
-        $member_bill->bill_type = 'registration';
-        $member_bill->member_id = $member->id;
-        $member_bill->amount = 400000;
-        $member_bill->due_date = Carbon::now()->addMonth();
-        $member_bill->status = 'UNPAID';
-        $member_bill->save();
-
-
         return response()->json(['data' => $member, 'message' => 'Berhasil Menambahkan Member']);
     }
 

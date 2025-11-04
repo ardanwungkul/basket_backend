@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Member;
+use App\Models\MemberBill;
 use App\Models\MemberFile;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -76,6 +78,24 @@ class MemberFileController extends Controller
             }
             $file->member_id = $request->member_id;
             $file->save();
+
+            $member_bill = new MemberBill();
+            $member_bill->bill_type = 'registration';
+            $member_bill->member_id = $member->id;
+            $member_bill->amount = 400000;
+            $member_bill->due_date = Carbon::now()->addMonth();
+            $member_bill->status = 'UNPAID';
+            $member_bill->save();
+
+            $monthly_member_bill = new MemberBill();
+            $monthly_member_bill->bill_type = 'monthly';
+            $monthly_member_bill->period_from = Carbon::now();
+            $monthly_member_bill->period_to = Carbon::now()->addMonth();
+            $monthly_member_bill->member_id = $member->id;
+            $monthly_member_bill->amount = $member->monthly_fee;
+            $monthly_member_bill->due_date = Carbon::now()->addMonth();
+            $monthly_member_bill->status = 'UNPAID';
+            $monthly_member_bill->save();
             return response()->json(['data' => $file, 'message' => 'Berhasil Mengirim Dokumen']);
         } else {
             return response()->json(['message' => 'Error']);

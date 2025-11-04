@@ -23,18 +23,16 @@ class TrainingScheduleController extends Controller
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'date' => 'required|date',
-            'member_ids' => 'array'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validasi gagal',
-                'errors' => $validator->errors()
-            ], 422);
-        }
+        $request->validate(
+            [
+                'title' => 'required|string|max:255',
+                'date' => 'required|date',
+                'member_ids' => 'required|array'
+            ],
+            [
+                'member_ids.required' => 'Pilih Minimal 1 Member Untuk Melanjutkan'
+            ]
+        );
 
         $schedule = TrainingSchedule::create([
             'id' => Str::uuid(),
@@ -86,7 +84,6 @@ class TrainingScheduleController extends Controller
     public function destroy($id)
     {
         $schedule = TrainingSchedule::findOrFail($id);
-        $schedule->members()->detach();
         $schedule->delete();
 
         return response()->json([

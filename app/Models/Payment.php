@@ -25,4 +25,8 @@ class Payment extends Model
     {
         return $this->hasMany(PaymentDetail::class, 'payment_id');
     }
+    public function parent()
+    {
+        return $this->belongsTo(Guardian::class, 'parent_id');
+    }
 }

@@ -27,6 +27,34 @@ class AttendanceController extends Controller
         return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
     }
 
+    public function getByAuth(Request $request)
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $query = Attendance::query();
+
+        // Jika user adalah parent, ambil attendance berdasarkan member yang dimiliki
+        if ($user->user_type === 'parent') {
+            $memberIds = $user->guardian->members->pluck('id');
+            $query->whereIn('member_id', $memberIds);
+        }
+
+        if ($request->with) {
+            $withRelations = $request->query('with', '');
+            $relations = $withRelations ? explode(',', $withRelations) : [];
+            $query->with($relations);
+        }
+
+        $data = $query->get();
+
+        return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data Attendance oleh Parent']);
+    }
+
+    // helper untuk menghitung KU berdasarkan tahun lahir 
     private function calculateAgeGroup($dateOfBirth)
     {
         if (!$dateOfBirth) return null;

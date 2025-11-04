@@ -89,11 +89,11 @@ class MemberFileController extends Controller
 
             $monthly_member_bill = new MemberBill();
             $monthly_member_bill->bill_type = 'monthly';
-            $monthly_member_bill->period_from = Carbon::now();
-            $monthly_member_bill->period_to = Carbon::now()->addMonth();
+            $monthly_member_bill->period_from = Carbon::now()->startOfMonth()->format('Y-m-d');
+            $monthly_member_bill->period_to = Carbon::now()->endOfMonth()->format('Y-m-d');
             $monthly_member_bill->member_id = $member->id;
             $monthly_member_bill->amount = $member->monthly_fee;
-            $monthly_member_bill->due_date = Carbon::now()->addMonth();
+            $monthly_member_bill->due_date = Carbon::now()->endOfMonth()->format('Y-m-d');
             $monthly_member_bill->status = 'UNPAID';
             $monthly_member_bill->save();
             return response()->json(['data' => $file, 'message' => 'Berhasil Mengirim Dokumen']);

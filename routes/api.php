@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\MemberBillController;
 use App\Http\Controllers\MemberController;
@@ -61,4 +62,6 @@ Route::middleware(['jwt.auth'])->group(function () {
         Route::put('/{id}', [AttendanceController::class, 'update']);
         Route::delete('/{id}', [AttendanceController::class, 'destroy']);
     });
+
+    Route::get('admin/dashboard', [DashboardController::class, 'admin']);
 });

@@ -6,6 +6,7 @@ use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -58,8 +59,20 @@ class PaymentController extends Controller
             $bill->status = 'PAID';
             $bill->save();
 
-            $hasUnpaidBills = $bill->member->bill()->where('status', 'UNPAID')->exists();
-            if (!$hasUnpaidBills) {
+
+            $hasUnpaidRegistrationBill = $bill->member->bill()
+                ->where('bill_type', 'registration')
+                ->where('status', 'UNPAID')
+                ->exists();
+
+            $hasMonthlyBillThisMonth = $bill->member->bill()
+                ->where('bill_type', 'monthly')
+                ->whereMonth('period_from', now()->month)
+                ->whereYear('period_from', now()->year)
+                ->where('status', 'UNPAID')
+                ->exists();
+
+            if (!$hasUnpaidRegistrationBill && !$hasMonthlyBillThisMonth) {
                 $member = $bill->member;
                 $member->status = 'active';
                 $member->save();

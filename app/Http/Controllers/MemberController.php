@@ -101,6 +101,15 @@ class MemberController extends Controller
         $member->is_former_club = $request->is_former_club ? $request->is_former_club : false;
         $member->former_club = $request->former_club;
         $member->former_club_year = $request->former_club_year;
+
+        if (!$parent->name || !$parent->phone_number || !$parent->email || !$parent->address) {
+            $parent->name = $request->parent_name;
+            $parent->phone_number = $request->parent_phone_number;
+            $parent->email = $request->parent_email;
+            $parent->address = $request->parent_address;
+            $parent->save();
+        }
+
         $member->parent_name = $request->parent_name;
         $member->parent_phone_number = $request->parent_phone_number;
         $member->parent_email = $request->parent_email;
@@ -109,8 +118,16 @@ class MemberController extends Controller
 
         if ($parent && $parent->member->count() > 0) {
             if ($parent->member->count() == 1) {
+                foreach ($parent->member as $members) {
+                    $members->monthly_fee = 250000;
+                    $members->save();
+                }
                 $member->monthly_fee = 250000;
             } else if ($parent->member->count() >= 2) {
+                foreach ($parent->member as $members) {
+                    $members->monthly_fee = 200000;
+                    $members->save();
+                }
                 $member->monthly_fee = 200000;
             }
         }

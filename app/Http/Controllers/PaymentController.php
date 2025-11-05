@@ -75,6 +75,7 @@ class PaymentController extends Controller
             if (!$hasUnpaidRegistrationBill && !$hasMonthlyBillThisMonth) {
                 $member = $bill->member;
                 $member->status = 'active';
+                $member->join_date = Carbon::now();
                 $member->save();
             }
         }

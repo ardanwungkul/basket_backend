@@ -12,6 +12,19 @@ use Illuminate\Support\Str;
 
 class MemberBillController extends Controller
 {
+    public function index(Request $request)
+    {
+        $query = MemberBill::query();
+
+        if ($request->with) {
+            $withRelations = $request->query('with', '');
+            $relations = $withRelations ? explode(',', $withRelations) : [];
+            $query->with($relations);
+        }
+
+        $data = $query->get();
+        return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
+    }
     public function getByAuth(Request $request)
     {
         $auth = Auth::user();
@@ -27,10 +40,6 @@ class MemberBillController extends Controller
 
         $data = $query->get();
         return response()->json(['data' => $data, 'message' => 'Berhasil Mendapatkan Data']);
-    }
-    public function index()
-    {
-        //
     }
 
     /**

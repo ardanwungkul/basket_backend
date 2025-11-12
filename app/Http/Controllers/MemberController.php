@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Guardian;
 use App\Models\Member;
 use App\Models\MemberBill;
 use Carbon\Carbon;
@@ -89,6 +90,11 @@ class MemberController extends Controller
         $auth = Auth::user();
         $parent = $auth->parent;
 
+        if(!$parent){
+            $parent = Guardian::find($request->parent_id);
+        }
+            
+
 
         $member = new Member();
         $member->name = $request->name;
@@ -165,25 +171,26 @@ class MemberController extends Controller
 
         $auth = Auth::user();
         $parent = $auth->parent;
-        if ($parent->id == $member->parent_id);
+        if ($parent && $parent->id == $member->parent_id || $auth->role == 'admin'){ 
+            $member->name = $request->name;
+            $member->gender = $request->gender;
+            $member->place_of_birth = $request->place_of_birth;
+            $member->date_of_birth = $request->date_of_birth;
+            $member->school = $request->school;
+            $member->school_grade = $request->school_grade;
+            $member->disease = $request->disease;
+            $member->is_former_club = $request->is_former_club ? $request->is_former_club : false;
+            $member->former_club = $request->former_club;
+            $member->former_club_year = $request->former_club_year;
+            $member->parent_name = $request->parent_name;
+            $member->parent_phone_number = $request->parent_phone_number;
+            $member->parent_email = $request->parent_email;
+            $member->parent_address = $request->parent_address;
+            $member->save();
+    
+            return response()->json(['data' => $member, 'message' => 'Berhasil Mengubah Data Member']);
+        };
 
-        $member->name = $request->name;
-        $member->gender = $request->gender;
-        $member->place_of_birth = $request->place_of_birth;
-        $member->date_of_birth = $request->date_of_birth;
-        $member->school = $request->school;
-        $member->school_grade = $request->school_grade;
-        $member->disease = $request->disease;
-        $member->is_former_club = $request->is_former_club ? $request->is_former_club : false;
-        $member->former_club = $request->former_club;
-        $member->former_club_year = $request->former_club_year;
-        $member->parent_name = $request->parent_name;
-        $member->parent_phone_number = $request->parent_phone_number;
-        $member->parent_email = $request->parent_email;
-        $member->parent_address = $request->parent_address;
-        $member->save();
-
-        return response()->json(['data' => $member, 'message' => 'Berhasil Mengubah Data Member']);
     }
 
     /**

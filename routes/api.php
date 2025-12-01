@@ -8,6 +8,7 @@ use App\Http\Controllers\MemberBillController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MemberFileController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TrainingScheduleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -68,3 +69,5 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('dashboard/admin', [DashboardController::class, 'admin']);
     Route::get('dashboard/member', [DashboardController::class, 'member']);
 });
+Route::get('report/admin', [ReportController::class, 'index']);
+Route::get('report/admin/get-member-by-age/{age}/{year}/{type}', [ReportController::class, 'getMemberByAge']);

@@ -44,4 +44,12 @@ class Member extends Model
     {
         return $this->belongsToMany(TrainingSchedule::class, 'pivot_member_training_schedule', 'member_id', 'training_schedule_id');
     }
+    public function sibling()
+    {
+        return $this->hasMany(Member::class, 'parent_id', 'parent_id');
+    }
+    public function attendance()
+    {
+        return $this->hasMany(Attendance::class, 'member_id');
+    }
 }

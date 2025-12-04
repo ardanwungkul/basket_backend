@@ -25,4 +25,9 @@ class MemberBill extends Model
     {
         return $this->belongsTo(Member::class, 'member_id');
     }
+    public function payment_detail()
+    {
+        return $this->hasMany(PaymentDetail::class, 'bill_id')
+            ->with('payment');
+    }
 }
